@@ -1,0 +1,28 @@
+{
+  "name": "ImageFramer",
+  "version": "1.0.0",
+  "description": "Edge-ready local EXIF image framer (Node/Fetch dual entry)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "build": "node -e \"console.log('No build step required')\"",
+    "check": "node --check index.js && node --check function.js && node --check app.js",
+    "test": "node -e \"console.log('No test suite configured')\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MuxYang/ImageFramer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "bugs": {
+    "url": "https://github.com/MuxYang/ImageFramer/issues"
+  },
+  "homepage": "https://github.com/MuxYang/ImageFramer#readme"
+}
