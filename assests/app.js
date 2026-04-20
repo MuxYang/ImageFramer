@@ -460,7 +460,7 @@ async function renderFrame() {
 
     const width = img.naturalWidth;
     const height = img.naturalHeight;
-    const frameHeight = clamp(Math.round(width * 0.18), 140, 260);
+    const frameHeight = getFrameBarHeight();
 
     els.canvas.width = width;
     els.canvas.height = height + frameHeight;
@@ -529,12 +529,17 @@ function getInfoState() {
   const showLocation = els.showLocation.checked;
   const selectedCount = Number(showTime) + Number(showLocation);
 
-  const bottomParts = [];
-  if (showTime) {
-    bottomParts.push(timeText);
-  }
-  if (showLocation) {
-    bottomParts.push(locationText || "0.000000, 0.000000");
+  const locationValue = locationText || "0.000000, 0.000000";
+  let bottomLeftText = "";
+  let bottomRightText = "";
+
+  if (showTime && showLocation) {
+    bottomLeftText = timeText;
+    bottomRightText = locationValue;
+  } else if (showTime) {
+    bottomLeftText = timeText;
+  } else if (showLocation) {
+    bottomLeftText = locationValue;
   }
 
   return {
@@ -542,107 +547,82 @@ function getInfoState() {
     params,
     selectedBrand: state.brands.find((item) => item.id === els.brandSelect.value) || state.brands[0],
     selectedCount,
-    bottomText: bottomParts.join("  |  "),
+    bottomLeftText,
+    bottomRightText,
   };
 }
 
 async function drawTopLine(ctx, payload) {
-  const { width, height, infoState } = payload;
+  const { width, height, frameHeight, infoState } = payload;
   const modelRaw = infoState.model;
   const paramsRaw = infoState.params;
 
   let modelSize = clamp(width * 0.03, 18, 40);
   let paramsSize = clamp(width * 0.018, 14, 28);
 
-  const baseY = height + payload.frameHeight * 0.42;
+  const baseY = height + frameHeight * (infoState.selectedCount > 0 ? 0.38 : 0.5);
   let modelY = baseY;
   let paramsY = baseY;
 
   if (infoState.selectedCount === 1) {
-    paramsY -= 8;
+    paramsY -= 6;
   }
   if (infoState.selectedCount >= 2) {
-    modelY -= 8;
+    modelY -= 6;
   }
 
   const logoObj = infoState.selectedBrand || null;
-  const hasLogo = Boolean(logoObj && logoObj.logo);
-  const logoW = hasLogo ? clamp(Number(logoObj.logoWidth || 76), 40, 120) : 0;
-  const logoH = hasLogo ? logoW * 0.45 : 0;
+  const logoImg = logoObj && logoObj.logo ? await getLogoImage(logoObj.logo) : null;
+  const hasLogo = Boolean(logoImg);
+  let logoH = hasLogo ? clamp(frameHeight * 0.24, 26, 46) : 0;
+  const logoAspect = hasLogo && logoImg.naturalHeight > 0 ? logoImg.naturalWidth / logoImg.naturalHeight : 1;
+  let logoW = hasLogo ? logoH * logoAspect : 0;
 
-  let modelMaxW = width * 0.34;
-  let paramsMaxW = width * 0.36;
+  const sidePad = clamp(width * 0.06, 16, 72);
+  const middleGap = clamp(width * 0.03, 14, 28);
+  const logoGap = hasLogo ? 12 : 0;
+  const sepGap = hasLogo ? 10 : 0;
+  const sepW = hasLogo ? 2 : 0;
+
+  let paramsMaxW = clamp(width * 0.36, 120, width * 0.52);
   const modelFontFamily = getCanvasFontFamily(infoState.selectedBrand, "SemiBold");
   const paramsFontFamily = getCanvasFontFamily(infoState.selectedBrand, "Medium");
 
-  ctx.font = `${modelSize}px ${modelFontFamily}`;
-  const modelText = fitText(ctx, modelRaw, modelMaxW);
-  const modelW = ctx.measureText(modelText).width;
-
   ctx.font = `${paramsSize}px ${paramsFontFamily}`;
-  const paramsText = fitText(ctx, paramsRaw, paramsMaxW);
-  const paramsW = ctx.measureText(paramsText).width;
+  let paramsText = fitText(ctx, paramsRaw, paramsMaxW);
+  let paramsW = ctx.measureText(paramsText).width;
 
-  const gapCenter = clamp(width * 0.04, 24, 60);
-  const logoGap = hasLogo ? 14 : 0;
-  const sepGap = hasLogo ? 12 : 10;
-  const sepW = hasLogo ? 2 : 0;
+  let rightClusterW = logoW + logoGap + sepW + sepGap + paramsW;
+  let clusterStartX = width - sidePad - rightClusterW;
+  let modelMaxW = Math.max(72, clusterStartX - middleGap - sidePad);
 
-  let topW = modelW + gapCenter + logoW + logoGap + sepW + sepGap + paramsW;
-  if (topW > width - 32) {
-    const scale = (width - 32) / topW;
-    modelSize = Math.max(14, Math.floor(modelSize * scale));
-    paramsSize = Math.max(12, Math.floor(paramsSize * scale));
-    modelMaxW *= scale;
-    paramsMaxW *= scale;
+  ctx.font = `${modelSize}px ${modelFontFamily}`;
+  let modelText = fitText(ctx, modelRaw, modelMaxW);
+  let modelW = ctx.measureText(modelText).width;
 
-    ctx.font = `${modelSize}px ${modelFontFamily}`;
-    const modelTextScaled = fitText(ctx, modelRaw, modelMaxW);
-    const modelWScaled = ctx.measureText(modelTextScaled).width;
-
+  const totalW = sidePad + modelW + middleGap + rightClusterW + sidePad;
+  if (totalW > width) {
+    const availableParamsW = Math.max(100, width - sidePad * 2 - middleGap - Math.min(modelW, width * 0.42) - (logoW + logoGap + sepW + sepGap));
     ctx.font = `${paramsSize}px ${paramsFontFamily}`;
-    const paramsTextScaled = fitText(ctx, paramsRaw, paramsMaxW);
-    const paramsWScaled = ctx.measureText(paramsTextScaled).width;
-
-    topW = modelWScaled + gapCenter + logoW + logoGap + sepW + sepGap + paramsWScaled;
-
-    await drawTopActual(
-      ctx,
-      {
-        width,
-        topW,
-        modelText: modelTextScaled,
-        paramsText: paramsTextScaled,
-        modelW: modelWScaled,
-        modelSize,
-        paramsSize,
-        logoW,
-        logoH,
-        gapCenter,
-        logoGap,
-        sepGap,
-        sepW,
-        modelY,
-        paramsY,
-        baseY,
-        hasLogo,
-        modelFontFamily,
-        paramsFontFamily,
-      },
-      payload.colors,
-      logoObj,
-    );
-    return;
+    paramsText = fitText(ctx, paramsRaw, availableParamsW);
+    paramsW = ctx.measureText(paramsText).width;
+    rightClusterW = logoW + logoGap + sepW + sepGap + paramsW;
+    clusterStartX = width - sidePad - rightClusterW;
+    modelMaxW = Math.max(72, clusterStartX - middleGap - sidePad);
+    ctx.font = `${modelSize}px ${modelFontFamily}`;
+    modelText = fitText(ctx, modelRaw, modelMaxW);
+    modelW = ctx.measureText(modelText).width;
   }
 
   await drawTopActual(
     ctx,
     {
       width,
-      topW,
+      sidePad,
+      clusterStartX,
       modelText,
       paramsText,
-      modelW,
+      paramsW,
       modelSize,
       paramsSize,
       logoW,
@@ -651,12 +631,14 @@ async function drawTopLine(ctx, payload) {
       logoGap,
       sepGap,
       sepW,
+      middleGap,
       modelY,
       paramsY,
       baseY,
       hasLogo,
       modelFontFamily,
       paramsFontFamily,
+      logoImg,
     },
     payload.colors,
     logoObj,
@@ -664,22 +646,17 @@ async function drawTopLine(ctx, payload) {
 }
 
 async function drawTopActual(ctx, geo, colors, logoObj) {
-  const startX = (geo.width - geo.topW) / 2;
-  const modelX = startX;
-  const rightX = modelX + geo.modelW + geo.gapCenter;
-
-  const logoX = rightX;
-  const logoY = geo.baseY - geo.logoH * 0.72;
-
-  const sepX = logoX + geo.logoW + geo.logoGap;
-  const sepTop = geo.baseY - geo.logoH * 0.7;
-  const sepBottom = geo.baseY + geo.logoH * 0.22;
-
-  const paramsX = sepX + geo.sepW + geo.sepGap;
+  const modelX = geo.sidePad;
+  const paramsX = geo.width - geo.sidePad - geo.paramsW;
+  const sepX = paramsX - geo.sepGap;
+  const logoX = sepX - geo.logoGap - geo.logoW;
+  const logoY = geo.baseY - geo.logoH / 2;
+  const sepTop = geo.baseY - geo.logoH * 0.52;
+  const sepBottom = geo.baseY + geo.logoH * 0.52;
 
   ctx.fillStyle = colors.mainText;
   ctx.font = `${geo.modelSize}px ${geo.modelFontFamily}`;
-  ctx.textBaseline = "alphabetic";
+  ctx.textBaseline = "middle";
   ctx.fillText(geo.modelText, modelX, geo.modelY);
 
   if (geo.hasLogo) {
@@ -695,30 +672,37 @@ async function drawTopActual(ctx, geo, colors, logoObj) {
   ctx.fillStyle = colors.mainText;
   ctx.fillText(geo.paramsText, paramsX, geo.paramsY);
 
-  if (geo.hasLogo && logoObj && logoObj.logo) {
-    const logoImg = await getLogoImage(logoObj.logo);
-    if (logoImg) {
-      ctx.drawImage(logoImg, logoX, logoY, geo.logoW, geo.logoH);
-    }
+  if (geo.hasLogo && geo.logoImg) {
+    ctx.drawImage(geo.logoImg, logoX, logoY, geo.logoW, geo.logoH);
   }
 }
 
 function drawBottomLine(ctx, payload) {
   const { width, height, frameHeight, colors, infoState } = payload;
-  if (!infoState.bottomText) {
+  if (!infoState.bottomLeftText && !infoState.bottomRightText) {
     return;
   }
 
-  const y = height + frameHeight * 0.78;
+  const y = height + frameHeight * 0.76;
   const size = clamp(width * 0.016, 12, 24);
   const subFontFamily = getCanvasFontFamily(infoState.selectedBrand, "Regular");
+  const sidePad = clamp(width * 0.06, 16, 72);
 
   ctx.font = `${size}px ${subFontFamily}`;
-  const text = fitText(ctx, infoState.bottomText, width - 40);
-  const textW = ctx.measureText(text).width;
+  ctx.textBaseline = "middle";
 
   ctx.fillStyle = colors.subText;
-  ctx.fillText(text, (width - textW) / 2, y);
+  if (infoState.bottomRightText) {
+    const leftText = fitText(ctx, infoState.bottomLeftText, width * 0.42);
+    const rightText = fitText(ctx, infoState.bottomRightText, width * 0.42);
+    const rightW = ctx.measureText(rightText).width;
+    ctx.fillText(leftText, sidePad, y);
+    ctx.fillText(rightText, width - sidePad - rightW, y);
+    return;
+  }
+
+  const text = fitText(ctx, infoState.bottomLeftText, width - sidePad * 2);
+  ctx.fillText(text, sidePad, y);
 }
 
 function getTheme() {
@@ -993,6 +977,10 @@ function fitText(ctx, text, maxWidth) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function getFrameBarHeight() {
+  return 180;
 }
 
 function fileToDataURL(file) {
