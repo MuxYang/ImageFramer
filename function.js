@@ -1,26 +1,29 @@
 "use strict";
 
-const entry = require("./index.js");
+async function edgeHandler(request) {
+  const url = new URL(request.url);
 
-if (require.main === module && typeof entry.handleNodeRequest === "function") {
-  const http = require("node:http");
-  const port = Number(process.env.PORT || 8787);
-  http.createServer((req, res) => {
-    entry.handleNodeRequest(req, res).catch((err) => {
-      res.writeHead(500, {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-store",
-      });
-      res.end(`Internal Server Error: ${err.message}`);
-    });
-  }).listen(port, () => {
-    console.log(`Server running at http://127.0.0.1:${port}`);
+  if (url.pathname === "/" || url.pathname === "") {
+    return Response.redirect(new URL("/index.html", url), 302);
+  }
+
+  return new Response("Not Found", {
+    status: 404,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+if (typeof addEventListener === "function") {
+  addEventListener("fetch", (event) => {
+    event.respondWith(edgeHandler(event.request));
   });
 }
 
 module.exports = {
-  ...entry,
-  fetch: entry.fetch || entry.handleFetchRequest,
-  handler: entry.handler || entry.handleFetchRequest,
-  default: entry.fetch || entry.handleFetchRequest,
+  fetch: edgeHandler,
+  handler: edgeHandler,
+  default: edgeHandler,
 };

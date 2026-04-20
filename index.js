@@ -151,6 +151,10 @@ if (typeof addEventListener === "function") {
   });
 }
 
+if (require.main === module) {
+  startLocalServer();
+}
+
 module.exports = {
   handleFetchRequest,
   handleNodeRequest,

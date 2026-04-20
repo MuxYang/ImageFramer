@@ -1,0 +1,10 @@
+{
+  "name": "imageframer",
+  "entry": "./function.js",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "assets": {
+    "directory": "./assests",
+    "notFoundStrategy": "singlePageApplication"
+  }
+}

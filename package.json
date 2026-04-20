@@ -7,8 +7,8 @@
     ".": "./function.js"
   },
   "scripts": {
-    "start": "node function.js",
-    "dev": "node function.js",
+    "start": "node index.js",
+    "dev": "node index.js",
     "build": "node -e \"console.log('No build step required')\"",
     "check": "node --check index.js && node --check function.js && node --check assests/app.js",
     "test": "node -e \"console.log('No test suite configured')\""
