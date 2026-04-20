@@ -2,7 +2,7 @@ const http = require("node:http");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 
-const ROOT_DIR = __dirname;
+const ROOT_DIR = path.join(__dirname, "assests");
 const DEFAULT_FILE = "index.html";
 
 const MIME_TYPES = {
@@ -151,13 +151,10 @@ if (typeof addEventListener === "function") {
   });
 }
 
-if (require.main === module) {
-  startLocalServer();
-}
-
 module.exports = {
   handleFetchRequest,
   handleNodeRequest,
   fetch: handleFetchRequest,
   handler: handleFetchRequest,
+  startLocalServer,
 };

@@ -1,13 +1,16 @@
 {
   "name": "ImageFramer",
   "version": "1.0.0",
-  "description": "Edge-ready local EXIF image framer (Node/Fetch dual entry)",
-  "main": "index.js",
+  "description": "Simple Node edge function + static assets architecture",
+  "main": "function.js",
+  "exports": {
+    ".": "./function.js"
+  },
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js",
+    "start": "node function.js",
+    "dev": "node function.js",
     "build": "node -e \"console.log('No build step required')\"",
-    "check": "node --check index.js && node --check function.js && node --check app.js",
+    "check": "node --check index.js && node --check function.js && node --check assests/app.js",
     "test": "node -e \"console.log('No test suite configured')\""
   },
   "repository": {
