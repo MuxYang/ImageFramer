@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXIF 图片相框生成器</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script defer src="./assests/vendor/exifr-lite.umd.js"></script>
+  <script defer src="./assests/vendor/piexif.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <section class="panel controls-panel">
+      <p class="note">纯本地处理：图片和 EXIF 仅在浏览器内计算，不上传任何数据。</p>
+
+      <div class="row">
+        <label for="imageInput">选择图片</label>
+        <input id="imageInput" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" />
+      </div>
+
+      <div class="row inline">
+        <label>主题</label>
+        <div class="radio-group" role="radiogroup" aria-label="主题选择">
+          <label><input type="radio" name="theme" value="white" checked /> 白色</label>
+          <label><input type="radio" name="theme" value="black" /> 黑色</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="brandSelect">品牌</label>
+        <select id="brandSelect"></select>
+      </div>
+
+      <div class="row">
+        <label for="authorNameInput">署名（无 EXIF 时用于默认参数）</label>
+        <input id="authorNameInput" type="text" value="Name" placeholder="Name" />
+      </div>
+
+      <div class="row">
+        <label for="modelInput">机型</label>
+        <input id="modelInput" type="text" placeholder="例如 Pixel 8 Pro" />
+      </div>
+
+      <div class="row">
+        <label for="paramsInput">拍摄参数</label>
+        <input id="paramsInput" type="text" placeholder="例如 f/1.9 1/120s ISO50 24mm" />
+      </div>
+
+      <div class="row">
+        <label for="timeInput">时间文本</label>
+        <input id="timeInput" type="text" placeholder="例如 2026-04-20 15:30" />
+      </div>
+
+      <div class="row">
+        <label for="locationInput">定位文本（经纬度）</label>
+        <input id="locationInput" type="text" placeholder="例如 39.904200, 116.407400" />
+      </div>
+
+      <div class="row inline">
+        <label>下方显示</label>
+        <div class="checkbox-group" aria-label="下方显示内容选择">
+          <label><input id="showTime" type="checkbox" checked /> 时间</label>
+          <label><input id="showLocation" type="checkbox" /> 定位</label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="renderBtn" type="button">生成预览</button>
+        <button id="downloadBtn" type="button" disabled>下载图片</button>
+      </div>
+
+      <p id="statusText" class="status" aria-live="polite">等待选择图片。</p>
+    </section>
+
+    <section class="panel preview-panel">
+      <div class="preview-wrap">
+        <canvas id="previewCanvas"></canvas>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

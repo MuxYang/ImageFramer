@@ -1,0 +1,166 @@
+[
+  {
+    "id": "google",
+    "name": "谷歌",
+    "folder": "Google",
+    "fontPrefix": "Google",
+    "keywords": ["google", "pixel", "谷歌"],
+    "logoWidth": 76
+  },
+  {
+    "id": "xiaomi",
+    "name": "小米",
+    "folder": "Xiaomi",
+    "fontPrefix": "Xiaomi",
+    "keywords": ["xiaomi", "mi", "redmi", "小米"],
+    "logoWidth": 74
+  },
+  {
+    "id": "huawei",
+    "name": "华为",
+    "folder": "Huawei",
+    "fontPrefix": "Huawei",
+    "keywords": ["huawei", "honor", "华为", "荣耀"],
+    "logoWidth": 84
+  },
+  {
+    "id": "sony",
+    "name": "索尼",
+    "folder": "Sony",
+    "keywords": ["sony", "索尼", "xperia", "alpha", "ilce", "dsc"],
+    "logoWidth": 78
+  },
+  {
+    "id": "panasonic",
+    "name": "松下",
+    "folder": "Panasonic",
+    "keywords": ["panasonic", "lumix", "松下", "dc-"],
+    "logoWidth": 96
+  },
+  {
+    "id": "dji",
+    "name": "大疆",
+    "folder": "DJI",
+    "keywords": ["dji", "大疆", "fc", "osmo"],
+    "logoWidth": 64
+  },
+  {
+    "id": "insta360",
+    "name": "影石",
+    "folder": "Insta360",
+    "keywords": ["insta360", "影石"],
+    "logoWidth": 96
+  },
+  {
+    "id": "vivo",
+    "name": "vivo",
+    "folder": "vivo",
+    "keywords": ["vivo"],
+    "logoWidth": 68
+  },
+  {
+    "id": "oppo",
+    "name": "OPPO",
+    "folder": "OPPO",
+    "keywords": ["oppo", "欧珀"],
+    "logoWidth": 78
+  },
+  {
+    "id": "oneplus",
+    "name": "一加",
+    "folder": "OnePlus",
+    "keywords": ["oneplus", "1+", "一加"],
+    "logoWidth": 86
+  },
+  {
+    "id": "iqoo",
+    "name": "iQOO",
+    "folder": "iQOO",
+    "keywords": ["iqoo"],
+    "logoWidth": 76
+  },
+  {
+    "id": "realme",
+    "name": "真我",
+    "folder": "realme",
+    "keywords": ["realme", "真我"],
+    "logoWidth": 88
+  },
+  {
+    "id": "samsung",
+    "name": "三星",
+    "folder": "Samsung",
+    "keywords": ["samsung", "galaxy", "三星", "sm-"],
+    "logoWidth": 96
+  },
+  {
+    "id": "nikon",
+    "name": "尼康",
+    "folder": "Nikon",
+    "keywords": ["nikon", "尼康"],
+    "logoWidth": 76
+  },
+  {
+    "id": "leica",
+    "name": "徕卡",
+    "folder": "Leica",
+    "keywords": ["leica", "徕卡"],
+    "logoWidth": 70
+  },
+  {
+    "id": "zeiss",
+    "name": "蔡司",
+    "folder": "ZEISS",
+    "keywords": ["zeiss", "蔡司"],
+    "logoWidth": 70
+  },
+  {
+    "id": "canon",
+    "name": "佳能",
+    "folder": "Canon",
+    "keywords": ["canon", "佳能", "eos"],
+    "logoWidth": 78
+  },
+  {
+    "id": "fujifilm",
+    "name": "富士",
+    "folder": "Fujifilm",
+    "keywords": ["fujifilm", "fuji", "富士"],
+    "logoWidth": 108
+  },
+  {
+    "id": "olympus",
+    "name": "奥林巴斯",
+    "folder": "Olympus",
+    "keywords": ["olympus", "奥林巴斯", "om system", "om-"],
+    "logoWidth": 106
+  },
+  {
+    "id": "pentax",
+    "name": "宾得",
+    "folder": "Pentax",
+    "keywords": ["pentax", "宾得"],
+    "logoWidth": 98
+  },
+  {
+    "id": "ricoh",
+    "name": "理光",
+    "folder": "Ricoh",
+    "keywords": ["ricoh", "gr", "理光"],
+    "logoWidth": 78
+  },
+  {
+    "id": "gopro",
+    "name": "GoPro",
+    "folder": "GoPro",
+    "keywords": ["gopro"],
+    "logoWidth": 86
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "folder": "Apple",
+    "keywords": ["apple", "iphone", "ipad"],
+    "logoWidth": 62
+  }
+]
