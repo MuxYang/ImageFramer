@@ -116,22 +116,21 @@ async function loadBrands() {
   }
 
   const normalized = parsed.map(normalizeBrand).filter(Boolean);
-  const enabled = [];
-
+  const deduped = [];
+  const seen = new Set();
   for (const brand of normalized) {
-    const resolvedLogo = await resolveBrandLogo(brand);
-    if (!resolvedLogo) {
+    if (seen.has(brand.id)) {
       continue;
     }
-    brand.logo = resolvedLogo;
-    enabled.push(brand);
+    seen.add(brand.id);
+    deduped.push(brand);
   }
 
-  state.brandStats = { total: normalized.length, active: enabled.length };
+  state.brandStats = { total: deduped.length, active: deduped.length };
 
-  if (enabled.length > 0) {
-    updateStatus(`品牌已启用 ${enabled.length}/${Math.max(normalized.length, 1)}（仅展示有可用 logo 的品牌）。`, false);
-    return enabled;
+  if (deduped.length > 0) {
+    updateStatus(`品牌已加载 ${deduped.length} 个（Logo/字体按需加载）。`, false);
+    return deduped;
   }
 
   const fallback = normalizeBrand({
@@ -144,16 +143,9 @@ async function loadBrands() {
     logoWidth: 76,
   });
 
-  const fallbackLogo = await resolveBrandLogo(fallback);
-  if (fallbackLogo) {
-    fallback.logo = fallbackLogo;
-    state.brandStats = { total: Math.max(normalized.length, 1), active: 1 };
-    updateStatus("未找到可用品牌配置，已回退到默认 Google。", true);
-    return [fallback];
-  }
-
-  updateStatus("未找到可用 logo，请将品牌 logo 放入 assests 后刷新。", true);
-  return [];
+  state.brandStats = { total: Math.max(normalized.length, 1), active: 1 };
+  updateStatus("未找到可用品牌配置，已回退到默认 Google。", true);
+  return [fallback];
 }
 
 function normalizeBrand(item) {
@@ -477,13 +469,23 @@ async function renderFrame() {
     ctx.fillStyle = colors.background;
     ctx.fillRect(0, height, width, frameHeight);
 
-    await drawTopLine(ctx, {
-      width,
-      height,
-      frameHeight,
-      colors,
-      infoState,
-    });
+    try {
+      await drawTopLine(ctx, {
+        width,
+        height,
+        frameHeight,
+        colors,
+        infoState,
+      });
+    } catch (layoutErr) {
+      drawTopLineFallback(ctx, {
+        width,
+        height,
+        frameHeight,
+        colors,
+        infoState,
+      });
+    }
 
     drawBottomLine(ctx, {
       width,
@@ -500,7 +502,8 @@ async function renderFrame() {
     els.downloadBtn.disabled = false;
     updateStatus(`预览已更新，导出分辨率 ${width}x${height + frameHeight}。`, false);
   } catch (err) {
-    updateStatus("渲染失败，请更换图片后重试。", true);
+    const message = err && err.message ? err.message : "未知错误";
+    updateStatus(`渲染失败：${message}`, true);
   }
 }
 
@@ -675,6 +678,28 @@ async function drawTopActual(ctx, geo, colors, logoObj) {
   if (geo.hasLogo && geo.logoImg) {
     ctx.drawImage(geo.logoImg, logoX, logoY, geo.logoW, geo.logoH);
   }
+}
+
+function drawTopLineFallback(ctx, payload) {
+  const { width, height, frameHeight, colors, infoState } = payload;
+  const y = height + frameHeight * (infoState.selectedCount > 0 ? 0.38 : 0.5);
+  const sidePad = clamp(width * 0.06, 16, 72);
+  const modelFontFamily = getCanvasFontFamily(infoState.selectedBrand, "SemiBold");
+  const paramsFontFamily = getCanvasFontFamily(infoState.selectedBrand, "Medium");
+  const modelSize = clamp(width * 0.03, 18, 40);
+  const paramsSize = clamp(width * 0.018, 14, 28);
+
+  ctx.textBaseline = "middle";
+
+  ctx.font = `${modelSize}px ${modelFontFamily}`;
+  const modelText = fitText(ctx, infoState.model, width * 0.45);
+  ctx.fillStyle = colors.mainText;
+  ctx.fillText(modelText, sidePad, y);
+
+  ctx.font = `${paramsSize}px ${paramsFontFamily}`;
+  const paramsText = fitText(ctx, infoState.params, width * 0.45);
+  const paramsW = ctx.measureText(paramsText).width;
+  ctx.fillText(paramsText, width - sidePad - paramsW, y);
 }
 
 function drawBottomLine(ctx, payload) {
@@ -1018,5 +1043,9 @@ async function getLogoImage(src) {
     state.logoCache.set(src, loadImage(src).catch(() => null));
   }
 
-  return state.logoCache.get(src);
+  const resolved = await state.logoCache.get(src);
+  if (resolved === null) {
+    state.logoCache.set(src, Promise.resolve(null));
+  }
+  return resolved;
 }
